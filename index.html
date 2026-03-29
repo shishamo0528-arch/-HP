@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libertinus+Serif:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Zen+Old+Mincho&display=swap" rel="stylesheet">
+<title>東京科学大学 建築学系 古賀研究室</title>
+<meta name="description" content="東京科学大学 環境・社会理工学院 古賀研究室のホームページです。建築材料に関する研究を行っています。">
+</head>
+<body>
+<section class="hero">
+    <div class="front-text">
+    <h1>東京科学大学 古賀 純子 研究室</h1>
+    <p>ISCT Department of Architecture</p>
+    <p>and Building Engineering</p>
+    <p>KOGA Junko Lab.</p>
+    </div>
+</section>
+<header>
+    <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="publication.html">Publication</a></li>
+        <li><a href="member.html">Member</a></li>
+        <li><a href="Link.html">Link</a></li>
+    </ul>
+    <div class="burger">
+      <details>
+        <summary>
+          <button type="button">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </summary>
+        <div class="menu">
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="publication.html">Publication</a></li>
+            <li><a href="member.html">Member</a></li>
+            <li><a href="Link.html">Link</a></li>
+          </ul>
+        </div>
+      </details>
+    </div>
+</header>
+<main>
+  <section class="top">
+    <section class="explanation">
+        <h1>古賀純子 研究室</h1>
+        <h2>(材料施工)</h2>
+        <ul>
+            <li>〒152-8550<br>東京都目黒区大岡山2-12-1 大岡山キャンパス西6号館　405号室</li>
+            <li>大岡山駅(東急大井町線,目黒線)から徒歩７分</li>
+            <li>TEL : 01-2345-6789</li>
+        </ul>
+        <p>詳細は本学の　<a href="https://www.isct.ac.jp/ja/001/access" class="sthp" target="_blank">ホームページ</a>　を参照ください。</p>
+    </section>
+    <div class="map">
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3393.9203231472657!2d139.68071161885504!3d35.60665310258749!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6018f5ab3221c7e3%3A0x1ec57e77400ac52a!2z5p2x5Lqs5bel5qWt5aSn5a2mIOilv--8luWPt-mkqA!5e0!3m2!1sja!2sjp!4v1755246774191!5m2!1sja!2sjp" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+  </section>
+  <section class="under">
+    <h3>What's New</h3>
+
+<div id="news">読み込み中...</div>
+<div id="pager"></div>
+
+<script>
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/19eHZl0HRg8xKYM0kGBMs9eXdQSAjXj87ndpJogT1VhY/gviz/tq?tqx=out:json";
+
+const PER_PAGE = 4;
+let currentPage = 1;
+let newsData = [];
+
+// データ取得
+fetch(SHEET_URL)
+  .then(res => res.text())
+  .then(text => {
+    const json = JSON.parse(
+      text.match(/google\.visualization\.Query\.setResponse\((.*)\)/)[1]
+    );
+
+    newsData = json.table.rows.map(row => ({
+      date: row.c[0]?.v || "",
+      title: row.c[1]?.v || "",
+      image: row.c[2]?.v || ""
+    }));
+
+    // 日付で新しい順
+    newsData.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    render();
+  });
+
+// 表示
+function render() {
+  const start = (currentPage - 1) * PER_PAGE;
+  const end = start + PER_PAGE;
+  const pageData = newsData.slice(start, end);
+
+  const newsDiv = document.getElementById("news");
+
+  newsDiv.innerHTML = pageData.map(item => `
+    <div class="news-item">
+      <div class="date">
+        ${formatDate(item.date)}
+        ${isNew(item.date) ? '<span class="new">NEW</span>' : ''}
+      </div>
+      <div class="content">
+        <p>${item.title}</p>
+        ${item.image ? `<img src="${item.image}" alt="">` : ""}
+      </div>
+    </div>
+  `).join("");
+
+  renderPager();
+}
+
+function renderPager() {
+  const totalPages = Math.ceil(newsData.length / PER_PAGE);
+  const pager = document.getElementById("pager");
+
+  let prev = "";
+  let pages = "";
+  let next = "";
+
+  // ◀ 前へ
+  if (currentPage > 1) {
+    prev = `<button onclick="goPage(${currentPage - 1})">◀</button>`;
+  }
+
+  // ===== ページ番号 =====
+
+  // ① 最初のページ
+  if (currentPage === 1) {
+    pages += `<button class="active" disabled>1</button>`;
+  } else {
+    pages += `<button onclick="goPage(1)">1</button>`;
+  }
+
+  // ② 前方省略 (...)
+  if (currentPage > 3) {
+    pages += `<span> ... </span>`;
+  }
+
+  // ③ 中央（現在ページ周辺）
+  for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+    if (i > 1 && i < totalPages) {
+      if (i === currentPage) {
+        pages += `<button class="active" disabled>${i}</button>`;
+      } else {
+        pages += `<button onclick="goPage(${i})">${i}</button>`;
+      }
+    }
+  }
+
+  // ④ 後方省略 (...)
+  if (currentPage < totalPages - 2) {
+    pages += `<span> ... </span>`;
+  }
+
+  // ⑤ 最後のページ
+  if (totalPages > 1) {
+    if (currentPage === totalPages) {
+      pages += `<button class="active" disabled>${totalPages}</button>`;
+    } else {
+      pages += `<button onclick="goPage(${totalPages})">${totalPages}</button>`;
+    }
+  }
+
+  // ▶ 次へ
+  if (currentPage < totalPages) {
+    next = `<button onclick="goPage(${currentPage + 1})">▶</button>`;
+  }
+
+  // ===== レイアウト（左右固定）=====
+  pager.innerHTML = `
+    <div class="pager-inner">
+      <div class="prev">${prev}</div>
+      <div class="pages">${pages}</div>
+      <div class="next">${next}</div>
+    </div>
+  `;
+}
+
+function goPage(page) {
+  currentPage = page;
+  render();
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;
+}
+
+function isNew(dateStr) {
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diff = (now - date) / (1000 * 60 * 60 * 24);
+  return diff <= 3;
+}
+</script>
+  </section>  
+</main>
+<footer>
+    <div class="under-logo">
+    <a href="index.html">古賀 純子 研究室</a>
+    </div>
+</footer>
+</body>
+</html>
